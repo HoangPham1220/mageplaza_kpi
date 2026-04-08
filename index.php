@@ -62,6 +62,13 @@ $surveyTicket = new SurveyTicket();
     </div>
     <div class="container-body">
         <?php $surveyTicket->collectTicketData(); ?>
+
+        <script>
+            var totalMagento = [],
+                totalShopify = [],
+                totalShiftAll = [];
+
+        </script>
         <?php if ($surveyTicket->getData('agent') || $surveyTicket->getData('extension')): ?>
                 <a href='http://kpi.com/' id='agent-table-back'>Back</a>
                 <h2>Detail for <b><?= $surveyTicket->getData('agent') ?: $surveyTicket->getData('extension') ?></b></h2>
@@ -148,8 +155,6 @@ $surveyTicket = new SurveyTicket();
                             // Achieved column (stacked)
                             ['Achieved', 0, shiftPoint, magentoPoint, shopifyPoint]
                         ];
-
-                        debugger
 
                         var data = google.visualization.arrayToDataTable(chartData);
 
@@ -259,13 +264,10 @@ $surveyTicket = new SurveyTicket();
                     google.charts.setOnLoadCallback(allTickets);
                    google.charts.setOnLoadCallback(allSurveys);
 
-                    var totalMagento = [],
-                        totalShopify = [],
-                        totalShift = [];
-
                    function drawFullPoint() {
                        var total = [];
                        var shopifyTs = <?= json_encode($surveyTicket->getShopifyTs()) ?>;
+                       debugger
 
                        totalMagento.forEach(function(item) {
                            if (!total[item.agent]) {
@@ -283,7 +285,7 @@ $surveyTicket = new SurveyTicket();
                            }
                        });
 
-                       totalShift.forEach(function(item) {
+                       totalShiftAll.forEach(function(item) {
                            if (!total[item.agent]) {
                                total[item.agent] = item.total;
                            } else {
@@ -890,7 +892,7 @@ $surveyTicket = new SurveyTicket();
                     name = "Tony";
                 }
 
-                totalShift.push({
+                totalShiftAll.push({
                     agent: name,
                     total: point
                 });
