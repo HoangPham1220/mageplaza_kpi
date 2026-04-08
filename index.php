@@ -181,7 +181,7 @@ $surveyTicket = new SurveyTicket();
                             document.getElementById('column-chart')
                         );
 
-                        chart.draw(data, options);SS
+                        chart.draw(data, options);
 
                         window.addEventListener('resize', () => drawColumnChart(agent));
                     }
@@ -893,6 +893,11 @@ $surveyTicket = new SurveyTicket();
                 }
 
                 totalShiftAll.push({
+                    agent: name,
+                    total: point
+                });
+
+                totalShift.push({
                     agent: name,
                     total: point
                 });
