@@ -13,25 +13,25 @@ $surveyTicket = new SurveyTicket();
 //$surveyTicket1 = new TicketDb();
 //$surveyTicket1->pickData(100);
 
-//$cacheFile = __DIR__ . '/cache_pickData.txt';
-//$cacheTime = 1000;
-//
-//$run = true;
-//
-//if (file_exists($cacheFile)) {
-//    $lastRun = (int) file_get_contents($cacheFile);
-//
-//    if (time() - $lastRun < $cacheTime) {
-//        $run = false;
-//    }
-//}
-//
-//if ($run) {
-//    $surveyTicket1 = new TicketDb();
-//    $surveyTicket1->pickData(100);
-//
-//    file_put_contents($cacheFile, time());
-//}
+$cacheFile = __DIR__ . '/cache_pickData.txt';
+$cacheTime = 1000;
+
+$run = true;
+
+if (file_exists($cacheFile)) {
+    $lastRun = (int) file_get_contents($cacheFile);
+
+    if (time() - $lastRun < $cacheTime) {
+        $run = false;
+    }
+}
+
+if ($run) {
+    $surveyTicket1 = new TicketDb();
+    $surveyTicket1->pickData(100);
+
+    file_put_contents($cacheFile, time());
+}
 
 ?>
 <header>
@@ -70,8 +70,62 @@ $surveyTicket = new SurveyTicket();
 
         </script>
         <?php if ($surveyTicket->getData('agent') || $surveyTicket->getData('extension')): ?>
+                <?php $target =(int) $surveyTicket->getTargetByAgent($surveyTicket->getData('agent')) ?>
+
                 <a href='http://kpi.com/' id='agent-table-back'>Back</a>
                 <h2>Detail for <b><?= $surveyTicket->getData('agent') ?: $surveyTicket->getData('extension') ?></b></h2>
+                <div id="edit_target">
+                    <button id="edit-btn">Edit</button>
+                    <input
+                            type="number"
+                            id="target-input"
+                            style="display:none; width:100px;"
+                    />
+
+                    <script>
+                        const editBtn = document.getElementById('edit-btn');
+                        const input = document.getElementById('target-input');
+
+                        let isEditing = false;
+
+                        editBtn.addEventListener('click', function () {
+                            if (!isEditing) {
+                                input.style.display = 'inline-block';
+
+                                editBtn.innerText = 'Update';
+                                isEditing = true;
+                            } else {
+                                const newValue = input.value;
+
+                                input.style.display = 'none';
+                                editBtn.innerText = 'Edit';
+                                isEditing = false;
+
+                                fetch('/update.php', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/x-www-form-urlencoded'
+                                    },
+                                    body: new URLSearchParams({
+                                        agent: '<?= $surveyTicket->getData("agent") ?>',
+                                        target: newValue
+                                    })
+                                })
+                                    .then(res => res.json())
+                                    .then(data => {
+                                        console.log('Updated success:', data);
+                                        location.reload();
+                                    })
+                                    .catch(err => {
+                                        console.error('Error:', err);
+                                    });
+
+                                console.log('Updated value:', newValue);
+                            }
+                        });
+                    </script>
+                </div>
+
 <!--                <div id='agent-table' style='width: 100%; height: 800px;'></div>-->
                 <div id='pie-chart' style='width: 100%; height: 500px;'></div>
                 <div id="column-chart" style="width: 100%; height: 500px;"></div>
@@ -98,7 +152,7 @@ $surveyTicket = new SurveyTicket();
                         var magentoPoint = ticketData[agent].total,
                             shopifyPoint = ticketData[agent].shopify_total;
 
-                        var goal = 6000;
+                        var goal = <?= json_encode($target) ?>;
 
                         var used = shiftPoint + magentoPoint + shopifyPoint;
                         var remaining = Math.max(goal - used, 0);
@@ -144,7 +198,7 @@ $surveyTicket = new SurveyTicket();
                         var magentoPoint = ticketData[agent].total,
                             shopifyPoint = ticketData[agent].shopify_total;
 
-                        var goal = 6000;
+                        var goal = <?= json_encode($target) ?>;
 
                         var chartData = [
                             ['Type', 'Goal', 'Shift', 'Magento', 'Shopify'],

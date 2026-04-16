@@ -29,6 +29,28 @@
 //   PRIMARY KEY (`id`)
 // ) ENGINE=InnoDB AUTO_INCREMENT=240 DEFAULT CHARSET=utf8
 
+//CREATE TABLE agent (
+//    id VARCHAR(50) PRIMARY KEY,
+//    name VARCHAR(255) NOT NULL,
+//    target INT NOT NULL,
+//    month DATE NOT NULL,
+//    update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+//        ON UPDATE CURRENT_TIMESTAMP
+//);
+
+//CREATE TABLE daily_snapshot (
+//    id VARCHAR(50) PRIMARY KEY,
+//    agent_id VARCHAR(50) NOT NULL,
+//    magento_point FLOAT,
+//    shopify_point FLOAT,
+//    date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+//
+//    CONSTRAINT fk_agent
+//        FOREIGN KEY (agent_id)
+//        REFERENCES agent(id)
+//        ON DELETE CASCADE
+//);
+
 class TicketDb
 {
     const DB_HOST = "localhost";  // Change as required
@@ -493,4 +515,43 @@ class TicketDb
 
         return $name ?: 'NOT SET';
     }
+
+    public function fetchTarget($agent)
+    {
+        $month = date('n');
+
+        $sql = "SELECT target FROM agent WHERE 1=1";
+
+        if (!empty($agent)) {
+            $sql .= " AND name = '" . $agent . "'";
+        }
+
+        $sql .= " AND month = " . $month;
+
+        $sql .= " ORDER BY update_time DESC LIMIT 1";
+
+        // 4. Query
+        $rs = $this->dbQuery($sql);
+
+        // 5. Fetch
+        $row = mysqli_fetch_assoc($rs);
+
+        return $row ? $row['target'] : 6000;
+    }
+
+    public function updateTarget($agent, $newTarget)
+    {
+        $month = date('n');
+
+
+        $newTarget = (int)$newTarget;
+
+        $sql = "
+        INSERT INTO agent (name, target, month)
+        VALUES ('" . $agent . "', " . $newTarget . ", " . $month . ")
+    ";
+
+        return $this->dbQuery($sql);
+    }
+
 }

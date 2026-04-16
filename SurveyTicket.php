@@ -1021,4 +1021,14 @@ class SurveyTicket
         "Backend Reindex",
         "Quick Flush Cache"
     ];
+
+    public function getTargetByAgent($agent)
+    {
+        return $this->db->fetchTarget($agent);
+    }
+
+    public function updateTargetByAgent($agent, $newTarget)
+    {
+        return $this->db->updateTarget($agent, $newTarget);
+    }
 }
